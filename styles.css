@@ -5,6 +5,8 @@
 .outline-minimap {
   --outline-minimap-width: 180px;
   --outline-minimap-top: 72px;
+  --outline-minimap-background-opacity: 88%;
+  --outline-minimap-background-blur: 0px;
   position: absolute;
   top: var(--outline-minimap-top);
   right: 12px;
@@ -15,9 +17,9 @@
   padding: 6px;
   border: 1px solid var(--background-modifier-border);
   border-radius: 8px;
-  background: color-mix(in srgb, var(--background-primary) 88%, transparent);
+  background: color-mix(in srgb, var(--background-primary) var(--outline-minimap-background-opacity), transparent);
   box-shadow: 0 8px 24px rgb(0 0 0 / 10%);
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(var(--outline-minimap-background-blur));
   font-size: 12px;
   line-height: 1.35;
 }

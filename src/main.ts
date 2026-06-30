@@ -16,6 +16,8 @@ interface OutlineMinimapSettings {
   showEmptyState: boolean;
   outlineWidth: number;
   topOffset: number;
+  backgroundOpacity: number;
+  backgroundBlur: number;
 }
 
 interface HeadingItem {
@@ -30,7 +32,9 @@ const DEFAULT_SETTINGS: OutlineMinimapSettings = {
   surroundingHeadingCount: 0,
   showEmptyState: true,
   outlineWidth: 180,
-  topOffset: 72
+  topOffset: 72,
+  backgroundOpacity: 88,
+  backgroundBlur: 0
 };
 
 export default class OutlineMinimapPlugin extends Plugin {
@@ -135,6 +139,8 @@ export default class OutlineMinimapPlugin extends Plugin {
 
     this.minimapEl.style.setProperty("--outline-minimap-width", `${this.settings.outlineWidth}px`);
     this.minimapEl.style.setProperty("--outline-minimap-top", `${this.settings.topOffset}px`);
+    this.minimapEl.style.setProperty("--outline-minimap-background-opacity", `${this.settings.backgroundOpacity}%`);
+    this.minimapEl.style.setProperty("--outline-minimap-background-blur", `${this.settings.backgroundBlur}px`);
 
     const scroller = this.getScroller(view);
     if (scroller && scroller !== this.activeScroller) {
@@ -414,6 +420,34 @@ class OutlineMinimapSettingTab extends PluginSettingTab {
           .setDynamicTooltip()
           .onChange(async (value) => {
             this.plugin.settings.topOffset = value;
+            await this.plugin.saveSettings();
+          });
+      });
+
+    new Setting(containerEl)
+      .setName("Background opacity")
+      .setDesc("Set the minimap background opacity.")
+      .addSlider((slider) => {
+        slider
+          .setLimits(0, 100, 1)
+          .setValue(this.plugin.settings.backgroundOpacity)
+          .setDynamicTooltip()
+          .onChange(async (value) => {
+            this.plugin.settings.backgroundOpacity = value;
+            await this.plugin.saveSettings();
+          });
+      });
+
+    new Setting(containerEl)
+      .setName("Background blur")
+      .setDesc("Set the frosted-glass blur behind the minimap. Use 0 for a crisp background.")
+      .addSlider((slider) => {
+        slider
+          .setLimits(0, 20, 1)
+          .setValue(this.plugin.settings.backgroundBlur)
+          .setDynamicTooltip()
+          .onChange(async (value) => {
+            this.plugin.settings.backgroundBlur = value;
             await this.plugin.saveSettings();
           });
       });

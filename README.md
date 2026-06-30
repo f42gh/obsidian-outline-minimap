@@ -13,6 +13,7 @@ It reads headings from Obsidian's `metadataCache`, renders a slim minimap in the
 - Click a heading to jump to its source line.
 - Active heading highlight while scrolling.
 - Empty-note behavior setting.
+- Background opacity and blur settings.
 - Plain DOM implementation with no UI framework.
 
 ## Development
