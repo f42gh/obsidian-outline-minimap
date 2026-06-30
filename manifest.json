@@ -1,0 +1,10 @@
+{
+  "id": "outline-minimap",
+  "name": "Outline Minimap",
+  "version": "0.1.0",
+  "minAppVersion": "1.8.0",
+  "description": "Shows a lightweight, clickable heading minimap for the active note.",
+  "author": "f42",
+  "authorUrl": "",
+  "isDesktopOnly": false
+}
