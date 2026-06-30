@@ -1,5 +1,7 @@
 # Outline Minimap
 
+[日本語 README](README.ja.md)
+
 Outline Minimap is a lightweight Obsidian plugin that shows a clickable heading outline for the active Markdown note.
 
 It reads headings from Obsidian's `metadataCache`, renders a slim minimap in the top-right of the active pane, and jumps to a heading when clicked.
@@ -14,6 +16,7 @@ It reads headings from Obsidian's `metadataCache`, renders a slim minimap in the
 - Active heading highlight while scrolling.
 - Empty-note behavior setting.
 - Background opacity and blur settings.
+- English and Japanese setting labels based on Obsidian's locale.
 - Plain DOM implementation with no UI framework.
 
 ## Development

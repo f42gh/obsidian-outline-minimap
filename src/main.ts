@@ -6,7 +6,8 @@ import {
   PluginSettingTab,
   Setting,
   TFile,
-  debounce
+  debounce,
+  moment
 } from "obsidian";
 
 interface OutlineMinimapSettings {
@@ -24,6 +25,83 @@ interface HeadingItem {
   text: string;
   level: number;
   line: number;
+}
+
+type TranslationKey =
+  | "settingsTitle"
+  | "noHeadings"
+  | "jumpToHeading"
+  | "displayedHeadingDepthName"
+  | "displayedHeadingDepthDesc"
+  | "topLevelSectionLimitName"
+  | "topLevelSectionLimitDesc"
+  | "surroundingHeadingCountName"
+  | "surroundingHeadingCountDesc"
+  | "showEmptyStateName"
+  | "showEmptyStateDesc"
+  | "outlineWidthName"
+  | "outlineWidthDesc"
+  | "topOffsetName"
+  | "topOffsetDesc"
+  | "backgroundOpacityName"
+  | "backgroundOpacityDesc"
+  | "backgroundBlurName"
+  | "backgroundBlurDesc";
+
+const TRANSLATIONS: Record<"en" | "ja", Record<TranslationKey, string>> = {
+  en: {
+    settingsTitle: "Outline Minimap",
+    noHeadings: "No headings",
+    jumpToHeading: "Jump to {{heading}}",
+    displayedHeadingDepthName: "Displayed heading depth",
+    displayedHeadingDepthDesc: "Choose the deepest heading level to show in the minimap.",
+    topLevelSectionLimitName: "Top-level section limit",
+    topLevelSectionLimitDesc: "Show headings only through the first N H1 sections. Set to 0 for no limit.",
+    surroundingHeadingCountName: "Surrounding heading count",
+    surroundingHeadingCountDesc: "Show only this many headings before and after the current heading. Set to 0 to show all.",
+    showEmptyStateName: "Show empty state",
+    showEmptyStateDesc: "Show a subtle message when the active note has no headings.",
+    outlineWidthName: "Outline width",
+    outlineWidthDesc: "Set the minimap width in pixels.",
+    topOffsetName: "Top offset",
+    topOffsetDesc: "Set the minimap distance from the top of the pane in pixels.",
+    backgroundOpacityName: "Background opacity",
+    backgroundOpacityDesc: "Set the minimap background opacity.",
+    backgroundBlurName: "Background blur",
+    backgroundBlurDesc: "Set the frosted-glass blur behind the minimap. Use 0 for a crisp background."
+  },
+  ja: {
+    settingsTitle: "Outline Minimap",
+    noHeadings: "見出しがありません",
+    jumpToHeading: "{{heading}} へ移動",
+    displayedHeadingDepthName: "表示する見出し深度",
+    displayedHeadingDepthDesc: "ミニマップに表示する最も深い見出しレベルを選びます。",
+    topLevelSectionLimitName: "H1 セクション数の上限",
+    topLevelSectionLimitDesc: "上から何個目の H1 セクションまで表示するかを指定します。0 にすると無制限です。",
+    surroundingHeadingCountName: "現在位置の前後に表示する見出し数",
+    surroundingHeadingCountDesc: "現在の見出しの前後に表示する見出し数を指定します。0 にするとすべて表示します。",
+    showEmptyStateName: "空状態を表示",
+    showEmptyStateDesc: "現在のノートに見出しがないとき、控えめなメッセージを表示します。",
+    outlineWidthName: "アウトライン幅",
+    outlineWidthDesc: "ミニマップの幅をピクセル単位で設定します。",
+    topOffsetName: "上からの位置",
+    topOffsetDesc: "ペイン上端からミニマップまでの距離をピクセル単位で設定します。",
+    backgroundOpacityName: "背景の透明度",
+    backgroundOpacityDesc: "ミニマップ背景の不透明度を設定します。",
+    backgroundBlurName: "背景のぼかし",
+    backgroundBlurDesc: "ミニマップ背後のすりガラス風ぼかし量を設定します。0 にするとくっきり表示されます。"
+  }
+};
+
+function t(key: TranslationKey, params: Record<string, string> = {}): string {
+  const locale = moment.locale().toLowerCase().startsWith("ja") ? "ja" : "en";
+  let text = TRANSLATIONS[locale][key];
+
+  for (const [paramKey, value] of Object.entries(params)) {
+    text = text.split(`{{${paramKey}}}`).join(value);
+  }
+
+  return text;
 }
 
 const DEFAULT_SETTINGS: OutlineMinimapSettings = {
@@ -159,7 +237,7 @@ export default class OutlineMinimapPlugin extends Plugin {
     if (!this.headings.length) {
       this.minimapEl.createDiv({
         cls: "outline-minimap-empty",
-        text: "No headings"
+        text: t("noHeadings")
       });
       return;
     }
@@ -171,7 +249,7 @@ export default class OutlineMinimapPlugin extends Plugin {
           role: "button",
           tabindex: "0",
           "data-index": String(index),
-          "aria-label": `Jump to ${heading.text}`,
+          "aria-label": t("jumpToHeading", { heading: heading.text }),
           title: heading.text
         }
       });
@@ -338,11 +416,11 @@ class OutlineMinimapSettingTab extends PluginSettingTab {
     const { containerEl } = this;
     containerEl.empty();
 
-    containerEl.createEl("h2", { text: "Outline Minimap" });
+    containerEl.createEl("h2", { text: t("settingsTitle") });
 
     new Setting(containerEl)
-      .setName("Displayed heading depth")
-      .setDesc("Choose the deepest heading level to show in the minimap.")
+      .setName(t("displayedHeadingDepthName"))
+      .setDesc(t("displayedHeadingDepthDesc"))
       .addDropdown((dropdown) => {
         for (let level = 1; level <= 6; level++) {
           dropdown.addOption(String(level), `H1-H${level}`);
@@ -357,8 +435,8 @@ class OutlineMinimapSettingTab extends PluginSettingTab {
       });
 
     new Setting(containerEl)
-      .setName("Top-level section limit")
-      .setDesc("Show headings only through the first N H1 sections. Set to 0 for no limit.")
+      .setName(t("topLevelSectionLimitName"))
+      .setDesc(t("topLevelSectionLimitDesc"))
       .addSlider((slider) => {
         slider
           .setLimits(0, 20, 1)
@@ -371,8 +449,8 @@ class OutlineMinimapSettingTab extends PluginSettingTab {
       });
 
     new Setting(containerEl)
-      .setName("Surrounding heading count")
-      .setDesc("Show only this many headings before and after the current heading. Set to 0 to show all.")
+      .setName(t("surroundingHeadingCountName"))
+      .setDesc(t("surroundingHeadingCountDesc"))
       .addSlider((slider) => {
         slider
           .setLimits(0, 12, 1)
@@ -385,8 +463,8 @@ class OutlineMinimapSettingTab extends PluginSettingTab {
       });
 
     new Setting(containerEl)
-      .setName("Show empty state")
-      .setDesc("Show a subtle message when the active note has no headings.")
+      .setName(t("showEmptyStateName"))
+      .setDesc(t("showEmptyStateDesc"))
       .addToggle((toggle) => {
         toggle
           .setValue(this.plugin.settings.showEmptyState)
@@ -397,8 +475,8 @@ class OutlineMinimapSettingTab extends PluginSettingTab {
       });
 
     new Setting(containerEl)
-      .setName("Outline width")
-      .setDesc("Set the minimap width in pixels.")
+      .setName(t("outlineWidthName"))
+      .setDesc(t("outlineWidthDesc"))
       .addSlider((slider) => {
         slider
           .setLimits(96, 280, 4)
@@ -411,8 +489,8 @@ class OutlineMinimapSettingTab extends PluginSettingTab {
       });
 
     new Setting(containerEl)
-      .setName("Top offset")
-      .setDesc("Set the minimap distance from the top of the pane in pixels.")
+      .setName(t("topOffsetName"))
+      .setDesc(t("topOffsetDesc"))
       .addSlider((slider) => {
         slider
           .setLimits(16, 180, 4)
@@ -425,8 +503,8 @@ class OutlineMinimapSettingTab extends PluginSettingTab {
       });
 
     new Setting(containerEl)
-      .setName("Background opacity")
-      .setDesc("Set the minimap background opacity.")
+      .setName(t("backgroundOpacityName"))
+      .setDesc(t("backgroundOpacityDesc"))
       .addSlider((slider) => {
         slider
           .setLimits(0, 100, 1)
@@ -439,8 +517,8 @@ class OutlineMinimapSettingTab extends PluginSettingTab {
       });
 
     new Setting(containerEl)
-      .setName("Background blur")
-      .setDesc("Set the frosted-glass blur behind the minimap. Use 0 for a crisp background.")
+      .setName(t("backgroundBlurName"))
+      .setDesc(t("backgroundBlurDesc"))
       .addSlider((slider) => {
         slider
           .setLimits(0, 20, 1)
